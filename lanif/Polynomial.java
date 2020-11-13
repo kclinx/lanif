@@ -15,6 +15,11 @@ public class Polynomial {
         termCount++;
     }
 
+    public void clear() {
+        terms.clear();
+        termCount = 0;
+    }
+
     public float eval(float val) {
         float value = 0;
         for(int i=0; i < termCount; i++) {

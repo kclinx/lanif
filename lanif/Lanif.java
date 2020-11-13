@@ -2,6 +2,7 @@ package lanif;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import java.awt.Dimension;
+import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JFrame;
@@ -13,90 +14,221 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
-public class Lanif implements ActionListener, DocumentListener {
+
+public class Lanif implements ActionListener {
     private Polynomial poly;
     private JFrame frame;
-    private JPanel graph, pane;
-    private JButton[] button;
-    private JLabel output;
-    private JLabel[] label;
-    private JTextField[] inbox;
+    private JPanel graph, polybox, opbox, rangebox;
+    private JTextArea output;
+    private int termCount = 0;
+    private float lowRange = 0;
+    private float highRange = 0;
+    private float increment = 0;
+    private char variable = 'x';
 
     public Lanif() {
         poly = new Polynomial();
         InitGui();
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if ("add".equals(e.getActionCommand())) {
-        }
-    }
-
-    public void insertUpdate(DocumentEvent ev) {
-    }
-
-    public void removeUpdate(DocumentEvent ev) {
-    }
-
-    public void changedUpdate(DocumentEvent ev) {
-    }
-
     public void InitGui() {
+        BorderLayout flayout = new BorderLayout();
         frame = new JFrame();
-        pane = new JPanel();
-        GridBagLayout pLayout = new GridBagLayout();
+        polybox = new JPanel();
+        opbox = new JPanel();
+        rangebox = new JPanel();
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setTitle("Lanif");
-        pane.setLayout(pLayout);
-        GridBagConstraints c = new GridBagConstraints();
-        // set some defaults for our gridbag constraint
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1;
-        c.weighty = 1;
-        inbox = new JTextField[4];
-        label = new JLabel[4];
-        button = new JButton[2];
-        // labels
-        label[0] = new JLabel("Coeff");
-        c.gridx = 0; c.gridy = 0;
-        pane.add(label[0], c);
+        frame.getContentPane().setLayout(flayout);
 
-        label[1] = new JLabel("Exp");
-        c.gridx = 1; c.gridy = 0;
-        pane.add(label[1], c);
+        // add our panes polybox (holds polynomial) and opbox(houses operations)
+        frame.add(polybox, BorderLayout.PAGE_START);
+        JPanel horiz = new JPanel();
+        horiz.setLayout(new BoxLayout(horiz, BoxLayout.Y_AXIS));
+        horiz.add(opbox);
+        horiz.add(rangebox);
+        frame.add(horiz, BorderLayout.PAGE_END);
 
-        inbox[0] = new JTextField();
-        c.gridx = 0; c.gridy = 1;
-        pane.add(inbox[0], c);
 
-        inbox[1] = new JTextField();
-        c.gridx = 1; c.gridy = 1;
-        pane.add(inbox[1], c);
+        // add output
+        output = new JTextArea(5, 20);
+        JScrollPane scrollPane = new JScrollPane(output);
+        output.setEditable(false);
+        frame.add(scrollPane, BorderLayout.CENTER);
 
-        button[0] = new JButton("add");
-        button[0].setActionCommand("add");
-        button[0].addActionListener(this);
-        c.gridx = 2; c.gridy = 1;
-        pane.add(button[0], c);
+        // add operations
+        JButton newButton = new JButton("Add Term");
+        newButton.setActionCommand("newUITerm");
+        newButton.addActionListener(this);
+        opbox.add(newButton);
 
-        frame.add(pane);
+        newButton = new JButton("Add Constant");
+        newButton.setActionCommand("newUIConstant");
+        newButton.addActionListener(this);
+        opbox.add(newButton);
+
+        newButton = new JButton("Clear");
+        newButton.setActionCommand("clear");
+        newButton.addActionListener(this);
+        opbox.add(newButton);
+
+        // add range stuff
+        JSpinner spin = new JSpinner();
+        spin.addPropertyChangeListener(new termChangeListener(this, null, spin, 2));
+        spin.setPreferredSize(new Dimension(60, 25));
+        rangebox.add(spin);
+        rangebox.add(new JLabel("<= " + variable + " <="));
+
+        spin = new JSpinner();
+        spin.addPropertyChangeListener(new termChangeListener(this, null, spin, 3));
+        spin.setPreferredSize(new Dimension(60, 25));
+        rangebox.add(spin);
+
+        rangebox.add(new JLabel("Increment: "));
+        spin = new JSpinner();
+        spin.addPropertyChangeListener(new termChangeListener(this, null, spin, 4));
+        spin.setPreferredSize(new Dimension(60, 25));
+        rangebox.add(spin);
+
+        newButton = new JButton("Eval");
+        newButton.setActionCommand("eval");
+        newButton.addActionListener(this);
+        opbox.add(newButton);
+
         frame.pack();
-        frame.setPreferredSize(new Dimension(300, 350)); // set default frame size to 300x350
+        //frame.setPreferredSize(new Dimension(300, 350)); // set default frame size to 300x350
         frame.setVisible(true);
     }
 
-    private Term parseText(String input) {
-        String[] tokens = input.split("+|-");
-        Term newTerm;
-        newTerm = new Term();
-        //for(int i=0; i < )
-        return newTerm;
+    private void newUITerm() {
+        JPanel panel = new JPanel();
+        Term myTerm = new Term(variable);
+        JLabel var = new JLabel(Character.toString(variable));
+        JSpinner coeff, exp;
+        //BorderLayout layout = new BorderLayout();
+
+        poly.addTerm(myTerm);
+        coeff = new JSpinner();
+        exp = new JSpinner();
+
+        if(termCount >= 1) {
+            JLabel sep = new JLabel("+");
+            panel.add(sep);
+        }
+        // Coefficient
+        //coeff.setValue(Float.toString(myTerm.getCoefficient()));
+        coeff.addPropertyChangeListener(new termChangeListener(this, myTerm, coeff, 0));
+        coeff.setPreferredSize(new Dimension(60, 25));
+        panel.add(coeff);
+
+        // Variable
+        panel.add(var);
+
+        // Exponent
+        //exp.setValue(Float.toString(myTerm.getExponent()));
+        exp.addPropertyChangeListener(new termChangeListener(this, myTerm, exp, 1));
+        panel.add(exp);
+        polybox.add(panel);
+        polybox.updateUI();
+        panel.updateUI();
+        frame.pack();
+        termCount++;
     }
-    private void newTerm() {
-        float coeff = Float.parseFloat(inbox[0].getText());
-        float exp = Float.parseFloat(inbox[1].getText());
-        poly.addTerm(new Term(coeff, exp));
+
+    private void newUIConstant() {
+        JPanel panel = new JPanel();
+        Term myTerm = new Term(variable);
+        myTerm.setExponent(0);
+        JSpinner coeff;
+        poly.addTerm(myTerm);
+        coeff = new JSpinner();
+
+        if(termCount >= 1) {
+            JLabel sep = new JLabel("+");
+            panel.add(sep);
+        }
+        // Coefficient only
+        //coeff.setValue(Float.toString(myTerm.getCoefficient()));
+        coeff.addPropertyChangeListener(new termChangeListener(this, myTerm, coeff, 0));
+        coeff.setPreferredSize(new Dimension(60, 25));
+        panel.add(coeff);
+        polybox.add(panel);
+        polybox.updateUI();
+        panel.updateUI();
+        frame.pack();
+        termCount++;
+    }
+
+    // Inner pseudo-class that handles changes to the spinners
+    // it is being used for both the "term" spinners and the "range" ones
+    // the term argument is used for the former, and the lanif argument
+    // is used for the latter
+    class termChangeListener implements PropertyChangeListener {
+        Term myTerm;
+        int prop;
+        JSpinner spin;
+        Lanif obj;
+        public termChangeListener(Lanif outer, Term newTerm, JSpinner mySpinner, int newProp) {
+            this.myTerm = newTerm;
+            this.prop = newProp;
+            this.spin = mySpinner;
+            this.obj = outer;
+        }
+
+        public void doUpdate(float newval) {
+            if(this.prop == 0) {
+                myTerm.setCoefficient(newval);
+            } else if(this.prop == 1) {
+                myTerm.setExponent(newval);
+            } else if((this.prop >= 2) || (this.prop <= 4)) {
+                obj.setRange(newval, this.prop);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            //evt.getValue
+            String value = spin.getValue() + "";
+            float newval = Float.parseFloat(value);
+            System.out.println("termUpdate: " + value);
+            doUpdate(newval);
+        }
+    }
+
+    public void setRange(float val, int w) {
+        if(w == 2) {
+            lowRange = val;
+        } else if(w == 3){
+            highRange = val;
+        } else if(w == 4){
+            increment = val;
+        }
+    }
+    public void doEval() {
+        output.setText("");
+        System.out.println(Float.toString(lowRange) + " <= " + variable + " <= " + Float.toString(highRange));
+        System.out.println(Float.toString(poly.eval(3)));
+        /*for(float x = lowRange; x <= highRange; x += increment) {
+            String yval = Float.toString(poly.eval(x));
+            output.append(variable + ": " + x + " => " + yval);
+        }*/
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if ("newUITerm".equals(e.getActionCommand())) {
+            newUITerm();
+        } else if ("newUIConstant".equals(e.getActionCommand())) {
+            newUIConstant();
+        } else if ("clear".equals(e.getActionCommand())) {
+            poly.clear();
+            polybox.removeAll();
+            polybox.updateUI();
+            termCount = 0;
+        } else if ("eval".equals(e.getActionCommand())) {
+            doEval();
+        }
     }
 
     public static void main(String args[]) {

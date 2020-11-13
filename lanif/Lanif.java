@@ -1,3 +1,9 @@
+/* CSCS2420 (Java) Final project
+ * By: Kaesi Manakkal
+ * Lanif is a polynomial evaluator. It is still in an early stage of development
+ * Thanks to @scoutchorton for the idea of using JSpinners instead of JTextFields
+ */
+ 
 package lanif;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;

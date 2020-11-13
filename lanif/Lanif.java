@@ -196,7 +196,6 @@ public class Lanif implements ActionListener {
             //evt.getValue
             String value = spin.getValue() + "";
             float newval = Float.parseFloat(value);
-            System.out.println("termUpdate: " + value);
             doUpdate(newval);
         }
     }
@@ -210,10 +209,9 @@ public class Lanif implements ActionListener {
             increment = val;
         }
     }
+
     public void doEval() {
         output.setText("");
-        System.out.println(Float.toString(lowRange) + " <= " + variable + " <= " + Float.toString(highRange));
-        System.out.println(Float.toString(poly.eval(3)));
         if((lowRange < highRange) && (increment >= 1)) {
             for(float x = lowRange; x <= highRange; x += increment) {
                 String yval = Float.toString(poly.eval(x));
@@ -228,6 +226,7 @@ public class Lanif implements ActionListener {
         } else if ("newUIConstant".equals(e.getActionCommand())) {
             newUIConstant();
         } else if ("clear".equals(e.getActionCommand())) {
+            output.setText("");
             poly.clear();
             polybox.removeAll();
             polybox.updateUI();

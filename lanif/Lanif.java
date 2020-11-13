@@ -12,10 +12,8 @@ import java.util.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 
 public class Lanif implements ActionListener {
@@ -77,19 +75,19 @@ public class Lanif implements ActionListener {
 
         // add range stuff
         JSpinner spin = new JSpinner();
-        spin.addPropertyChangeListener(new termChangeListener(this, null, spin, 2));
+        spin.addChangeListener(new termChangeListener(this, null, spin, 2));
         spin.setPreferredSize(new Dimension(60, 25));
         rangebox.add(spin);
         rangebox.add(new JLabel("<= " + variable + " <="));
 
         spin = new JSpinner();
-        spin.addPropertyChangeListener(new termChangeListener(this, null, spin, 3));
+        spin.addChangeListener(new termChangeListener(this, null, spin, 3));
         spin.setPreferredSize(new Dimension(60, 25));
         rangebox.add(spin);
 
         rangebox.add(new JLabel("Increment: "));
         spin = new JSpinner();
-        spin.addPropertyChangeListener(new termChangeListener(this, null, spin, 4));
+        spin.addChangeListener(new termChangeListener(this, null, spin, 4));
         spin.setPreferredSize(new Dimension(60, 25));
         rangebox.add(spin);
 
@@ -120,7 +118,7 @@ public class Lanif implements ActionListener {
         }
         // Coefficient
         //coeff.setValue(Float.toString(myTerm.getCoefficient()));
-        coeff.addPropertyChangeListener(new termChangeListener(this, myTerm, coeff, 0));
+        coeff.addChangeListener(new termChangeListener(this, myTerm, coeff, 0));
         coeff.setPreferredSize(new Dimension(60, 25));
         panel.add(coeff);
 
@@ -129,7 +127,7 @@ public class Lanif implements ActionListener {
 
         // Exponent
         //exp.setValue(Float.toString(myTerm.getExponent()));
-        exp.addPropertyChangeListener(new termChangeListener(this, myTerm, exp, 1));
+        exp.addChangeListener(new termChangeListener(this, myTerm, exp, 1));
         panel.add(exp);
         polybox.add(panel);
         polybox.updateUI();
@@ -152,7 +150,7 @@ public class Lanif implements ActionListener {
         }
         // Coefficient only
         //coeff.setValue(Float.toString(myTerm.getCoefficient()));
-        coeff.addPropertyChangeListener(new termChangeListener(this, myTerm, coeff, 0));
+        coeff.addChangeListener(new termChangeListener(this, myTerm, coeff, 0));
         coeff.setPreferredSize(new Dimension(60, 25));
         panel.add(coeff);
         polybox.add(panel);
@@ -166,7 +164,7 @@ public class Lanif implements ActionListener {
     // it is being used for both the "term" spinners and the "range" ones
     // the term argument is used for the former, and the lanif argument
     // is used for the latter
-    class termChangeListener implements PropertyChangeListener {
+    class termChangeListener implements ChangeListener {
         Term myTerm;
         int prop;
         JSpinner spin;
@@ -188,7 +186,7 @@ public class Lanif implements ActionListener {
             }
         }
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void stateChanged(ChangeEvent evt) {
             //evt.getValue
             String value = spin.getValue() + "";
             float newval = Float.parseFloat(value);
@@ -210,10 +208,12 @@ public class Lanif implements ActionListener {
         output.setText("");
         System.out.println(Float.toString(lowRange) + " <= " + variable + " <= " + Float.toString(highRange));
         System.out.println(Float.toString(poly.eval(3)));
-        /*for(float x = lowRange; x <= highRange; x += increment) {
-            String yval = Float.toString(poly.eval(x));
-            output.append(variable + ": " + x + " => " + yval);
-        }*/
+        if((lowRange < highRange) && (increment >= 1)) {
+            for(float x = lowRange; x <= highRange; x += increment) {
+                String yval = Float.toString(poly.eval(x));
+                output.append(variable + ": " + x + " => " + yval + "\n");
+            }
+        }
     }
 
     public void actionPerformed(ActionEvent e) {

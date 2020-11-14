@@ -5,9 +5,9 @@ public class Term {
     private float coefficient, exponent;
     private char variable;
 
-    public Term(char var) {
+    public Term() {
         this.coefficient = 0;
-        this.variable = var;
+        this.variable = 'x';
         this.exponent = 0;
     }
 
@@ -25,6 +25,10 @@ public class Term {
 
     public void setCoefficient(float val) {
         this.coefficient = val;
+    }
+
+    public void setVariable(char var) {
+        this.variable = var;
     }
 
     public float plugIn(float val) {

@@ -20,21 +20,27 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.util.ArrayList;
 
 
 public class Lanif implements ActionListener {
     private Polynomial poly;
     private JFrame frame;
-    private JPanel graph, polybox, opbox, rangebox;
+    private JPanel graph, polybox;
     private JTextArea output;
+    private JLabel rangelabel;
+    private ArrayList<JLabel> varlabels;
+    private JTextField varfield;
+
+    // range stuff
     private int termCount = 0;
     private float lowRange = 0;
     private float highRange = 0;
     private float increment = 0;
-    private char variable = 'x';
 
     public Lanif() {
         poly = new Polynomial();
+        varlabels = new ArrayList<JLabel>();
         InitGui();
     }
 
@@ -42,8 +48,11 @@ public class Lanif implements ActionListener {
         BorderLayout flayout = new BorderLayout();
         frame = new JFrame();
         polybox = new JPanel();
-        opbox = new JPanel();
-        rangebox = new JPanel();
+        JPanel opbox = new JPanel();
+        JPanel rangebox = new JPanel();
+        JPanel vchangebox = new JPanel();
+        varfield = new JTextField("" + poly.getVariable());
+
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setTitle("Lanif");
         frame.getContentPane().setLayout(flayout);
@@ -54,6 +63,7 @@ public class Lanif implements ActionListener {
         horiz.setLayout(new BoxLayout(horiz, BoxLayout.Y_AXIS));
         horiz.add(opbox);
         horiz.add(rangebox);
+        horiz.add(vchangebox);
         frame.add(horiz, BorderLayout.PAGE_END);
 
 
@@ -79,12 +89,22 @@ public class Lanif implements ActionListener {
         newButton.addActionListener(this);
         opbox.add(newButton);
 
+        newButton = new JButton("Eval");
+        newButton.setActionCommand("eval");
+        newButton.addActionListener(this);
+        opbox.add(newButton);
+
         // add range stuff
         JSpinner spin = new JSpinner();
         spin.addChangeListener(new termChangeListener(this, null, spin, 2));
         spin.setPreferredSize(new Dimension(60, 25));
         rangebox.add(spin);
-        rangebox.add(new JLabel("<= " + variable + " <="));
+        rangebox.add(new JLabel("<= "));
+        // keep track of all JLabels holding a variable
+        rangelabel = new JLabel("" + poly.getVariable());
+        rangebox.add(rangelabel);
+        rangebox.add(new JLabel("<= "));
+
 
         spin = new JSpinner();
         spin.addChangeListener(new termChangeListener(this, null, spin, 3));
@@ -97,10 +117,14 @@ public class Lanif implements ActionListener {
         spin.setPreferredSize(new Dimension(60, 25));
         rangebox.add(spin);
 
-        newButton = new JButton("Eval");
-        newButton.setActionCommand("eval");
+        rangebox.add(new JLabel("Var: "));
+        varfield.setPreferredSize(new Dimension(25, 25));
+        rangebox.add(varfield);
+        newButton = new JButton("set");
+        newButton.setActionCommand("setvar");
         newButton.addActionListener(this);
-        opbox.add(newButton);
+        rangebox.add(newButton);
+
 
         frame.pack();
         //frame.setPreferredSize(new Dimension(300, 350)); // set default frame size to 300x350
@@ -108,8 +132,9 @@ public class Lanif implements ActionListener {
     }
 
     private void newUITerm() {
+        char variable = poly.getVariable();
         JPanel panel = new JPanel();
-        Term myTerm = new Term(variable);
+        Term myTerm = new Term();
         JLabel var = new JLabel(Character.toString(variable));
         JSpinner coeff, exp;
         //BorderLayout layout = new BorderLayout();
@@ -130,6 +155,7 @@ public class Lanif implements ActionListener {
 
         // Variable
         panel.add(var);
+        varlabels.add(var);
 
         // Exponent
         //exp.setValue(Float.toString(myTerm.getExponent()));
@@ -143,8 +169,9 @@ public class Lanif implements ActionListener {
     }
 
     private void newUIConstant() {
+        char variable = poly.getVariable();
         JPanel panel = new JPanel();
-        Term myTerm = new Term(variable);
+        Term myTerm = new Term();
         myTerm.setExponent(0);
         JSpinner coeff;
         poly.addTerm(myTerm);
@@ -210,7 +237,18 @@ public class Lanif implements ActionListener {
         }
     }
 
+    public void changeVariable(char var) {
+        // change backend variable
+        poly.changeVariable(var);
+        // change all labels
+        rangelabel.setText("" + var);
+        for(int i=0; i < varlabels.size(); i++) {
+            this.varlabels.get(i).setText("" + var);
+        }
+    }
+
     public void doEval() {
+        char variable = poly.getVariable();
         output.setText("");
         if((lowRange < highRange) && (increment >= 1)) {
             for(float x = lowRange; x <= highRange; x += increment) {
@@ -233,6 +271,11 @@ public class Lanif implements ActionListener {
             termCount = 0;
         } else if ("eval".equals(e.getActionCommand())) {
             doEval();
+        } else if ("setvar".equals(e.getActionCommand())) {
+            String newvar = varfield.getText();
+            if(newvar.length() == 1) {
+                changeVariable(newvar.charAt(0));
+            }
         }
     }
 

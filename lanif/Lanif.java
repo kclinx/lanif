@@ -134,33 +134,36 @@ public class Lanif implements ActionListener {
     private void newUITerm() {
         char variable = poly.getVariable();
         JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
         Term myTerm = new Term();
         JLabel var = new JLabel(Character.toString(variable));
         JSpinner coeff, exp;
-        //BorderLayout layout = new BorderLayout();
+
+        // GridBag stuff
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
 
         poly.addTerm(myTerm);
         coeff = new JSpinner();
         exp = new JSpinner();
 
-        if(termCount >= 1) {
-            JLabel sep = new JLabel("+");
-            panel.add(sep);
-        }
+        if(termCount >= 1) polybox.add(new JLabel("+"));
+
         // Coefficient
-        //coeff.setValue(Float.toString(myTerm.getCoefficient()));
         coeff.addChangeListener(new termChangeListener(this, myTerm, coeff, 0));
         coeff.setPreferredSize(new Dimension(60, 25));
-        panel.add(coeff);
+        c.gridx = 0; c.gridy = 1;
+        panel.add(coeff, c);
 
         // Variable
-        panel.add(var);
+        c.gridx = 1; c.gridy = 1;
+        panel.add(var, c);
         varlabels.add(var);
 
         // Exponent
-        //exp.setValue(Float.toString(myTerm.getExponent()));
         exp.addChangeListener(new termChangeListener(this, myTerm, exp, 1));
-        panel.add(exp);
+        c.gridx = 2; c.gridy = 0;
+        panel.add(exp, c);
         polybox.add(panel);
         polybox.updateUI();
         panel.updateUI();
@@ -171,21 +174,28 @@ public class Lanif implements ActionListener {
     private void newUIConstant() {
         char variable = poly.getVariable();
         JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
         Term myTerm = new Term();
         myTerm.setExponent(0);
         JSpinner coeff;
         poly.addTerm(myTerm);
         coeff = new JSpinner();
+        // GridBag stuff
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
 
-        if(termCount >= 1) {
-            JLabel sep = new JLabel("+");
-            panel.add(sep);
-        }
+        if(termCount >= 1) polybox.add(new JLabel("+"));
+
+        // add vertical gap
+        panel.add(Box.createVerticalStrut(20));
+        c.gridx=0; c.gridy=0;
+        panel.add(coeff, c);
+
         // Coefficient only
-        //coeff.setValue(Float.toString(myTerm.getCoefficient()));
         coeff.addChangeListener(new termChangeListener(this, myTerm, coeff, 0));
         coeff.setPreferredSize(new Dimension(60, 25));
-        panel.add(coeff);
+        c.gridx = 0; c.gridy = 1;
+        panel.add(coeff, c);
         polybox.add(panel);
         polybox.updateUI();
         panel.updateUI();
@@ -220,7 +230,6 @@ public class Lanif implements ActionListener {
         }
 
         public void stateChanged(ChangeEvent evt) {
-            //evt.getValue
             String value = spin.getValue() + "";
             float newval = Float.parseFloat(value);
             doUpdate(newval);

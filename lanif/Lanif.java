@@ -236,6 +236,7 @@ public class Lanif implements ActionListener {
         }
     }
 
+    // set our evaluation range
     public void setRange(float val, int w) {
         if(w == 2) {
             lowRange = val;
@@ -246,6 +247,8 @@ public class Lanif implements ActionListener {
         }
     }
 
+    // this updates all of the variable labels, and changes our variable
+    // the default variable is 'x'
     public void changeVariable(char var) {
         // change backend variable
         poly.changeVariable(var);
@@ -256,6 +259,7 @@ public class Lanif implements ActionListener {
         }
     }
 
+    // evaluate our polynomial for all numbers in our range
     public void doEval() {
         char variable = poly.getVariable();
         output.setText("");
@@ -267,6 +271,7 @@ public class Lanif implements ActionListener {
         }
     }
 
+    // actionPerformed is used for all of the JButtons
     public void actionPerformed(ActionEvent e) {
         if ("newUITerm".equals(e.getActionCommand())) {
             newUITerm();
